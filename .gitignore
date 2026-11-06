@@ -1,0 +1,17 @@
+# Private runtime files and generated output
+node_modules/
+dist/
+.wrangler/
+.sites-runtime/
+.env*
+!.env.example
+.dev.vars*
+*.sqlite*
+*.db
+*.db-*
+*.xls
+*.xlsx
+backups/
+private-data/
+originals/
+*.tsbuildinfo
