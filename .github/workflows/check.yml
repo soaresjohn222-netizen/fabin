@@ -1,0 +1,39 @@
+name: Verificar sistema
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SHARP_IGNORE_GLOBAL_LIBVIPS: '1'
+      CLOUDFLARE_CF_FETCH_ENABLED: 'false'
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+          run_install: false
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+      - name: Conferir tipos e regressões
+        run: pnpm check
+      - name: Compilar para Cloudflare
+        run: pnpm build:cloudflare

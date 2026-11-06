@@ -1,0 +1,4 @@
+Fabin — fonte do sistema
+Repositório: https://github.com/soaresjohn222-netizen/fabin
+Fonte-base: 1d691563f7b715fe378c86a7340c54ad8e2b2cdb
+Inclui correção de nomes e preparação para Cloudflare. A adaptação gratuita e a migração de produção ainda estão pendentes.

@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1789312435016,
+      "tag": "0000_ambiguous_blonde_phantom",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789358249038,
+      "tag": "0001_lethal_kang",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789487511359,
+      "tag": "0002_long_the_call",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792195709394,
+      "tag": "0003_gigantic_barracuda",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1792198129526,
+      "tag": "0004_large_crusher_hogan",
+      "breakpoints": true
+    }
+  ]
+}
