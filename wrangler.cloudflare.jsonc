@@ -3,14 +3,28 @@
   "name": "oficinafabin",
   "main": "vinext/server/fetch-handler",
   "compatibility_date": "2026-05-15",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "workers_dev": true,
-  "observability": {"enabled": true},
-  "d1_databases": [{
-    "binding": "DB",
-    "database_name": "oficinafabin-db",
-    "database_id": "00000000-0000-4000-8000-000000000000",
-    "migrations_dir": "drizzle"
-  }],
-  "r2_buckets": [{"binding": "BUCKET", "bucket_name": "oficinafabin-arquivos"}]
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "oficinafabin-db",
+      "database_id": "e0077b52-ff21-47e5-8c01-b0ad7ca1ba4f",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "vars": {
+    "AUTH_PROVIDER": "supabase",
+    "STORAGE_PROVIDER": "supabase",
+    "ADMIN_USERNAME": "oficina",
+    "AUTH_VERSION": "1",
+    "SUPABASE_URL": "https://ayqtyecrthoyymmyklvy.supabase.co",
+    "SUPABASE_STORAGE_BUCKET": "oficinafabin-arquivos",
+    "APP_ORIGIN": "https://oficinafabin.soaresjohn222.workers.dev"
+  }
 }

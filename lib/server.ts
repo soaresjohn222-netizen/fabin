@@ -1,13 +1,19 @@
 import { env } from "cloudflare:workers";
 import { digest, token, verifyPassword } from "./password";
+import { authSettings, supabaseBucket, verifySupabasePassword } from "./supabase-server";
 export class HttpError extends Error { constructor(public status:number,message:string){super(message)} }
 export function db(){if(!env.DB)throw new HttpError(503,"O banco de dados está indisponível. Tente novamente em instantes.");return env.DB;}
-export function bucket(){if(!env.BUCKET)throw new HttpError(503,"O armazenamento está indisponível. Tente novamente.");return env.BUCKET;}
+export function bucket(){if(env.STORAGE_PROVIDER==="supabase")return supabaseBucket(env);if(!env.BUCKET)throw new HttpError(503,"O armazenamento está indisponível. Tente novamente.");return env.BUCKET;}
 export function json(value:unknown,status=200,headers:Record<string,string>={}) {return Response.json(value,{status,headers:{"Cache-Control":"no-store, private","X-Content-Type-Options":"nosniff",...headers}})}
 async function storedCredentials() {
   return db().prepare("SELECT username,password_hash FROM admin_credentials WHERE id=1").first<{username:string;password_hash:string}>();
 }
 export async function config() {
+  if(env.AUTH_PROVIDER==="supabase"){
+    const cfg=authSettings(env);
+    if(!env.ADMIN_USERNAME||!env.AUTH_VERSION)throw new HttpError(503,"O acesso ainda está sendo configurado.");
+    return {username:env.ADMIN_USERNAME,hash:"",version:digest(env.ADMIN_USERNAME+cfg.id+env.AUTH_VERSION),provider:"supabase"};
+  }
   let username=env.ADMIN_USERNAME;let hash=env.ADMIN_PASSWORD_HASH;
   if(!username&&!hash){const stored=await storedCredentials();username=stored?.username;hash=stored?.password_hash;}
   if(!username||!hash)throw new HttpError(503,"O acesso ainda está sendo configurado. Tente novamente em instantes.");
@@ -47,7 +53,7 @@ export async function login(request:Request) {
   const keys=["login:"+digest(identity),"login:all"];
   const counts=await db().batch<{count:number}>(keys.map(key=>db().prepare("INSERT INTO login_attempts (key,count,expires_at) VALUES (?,1,?) ON CONFLICT(key) DO UPDATE SET count=CASE WHEN expires_at<? THEN 1 ELSE count+1 END, expires_at=CASE WHEN expires_at<? THEN excluded.expires_at ELSE expires_at END RETURNING count").bind(key,now+15*60000,now,now)));
   if(Number(counts[0].results[0]?.count)>5||Number(counts[1].results[0]?.count)>30)throw new HttpError(429,"Muitas tentativas de acesso. Aguarde 15 minutos e tente novamente.");
-  const valid=verifyPassword(input.password,cfg.hash);
+  const valid=input.username===cfg.username&&(cfg.provider==="supabase"?await verifySupabasePassword(env,input.password):verifyPassword(input.password,cfg.hash));
   if(!valid||input.username!==cfg.username)throw new HttpError(401,"Usuário ou senha incorretos.");
   const value=token();
   await db().batch([
