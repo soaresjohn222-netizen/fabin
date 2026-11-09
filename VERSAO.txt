@@ -1,6 +1,6 @@
 Fabin — Cloudflare Free + D1 + Supabase Free
 Repositório: https://github.com/soaresjohn222-netizen/fabin
-Produção: https://oficinafabin.soaresjohn222.workers.dev
+Produção: https://sistema.fabinhomotors.workers.dev
 Branch de produção: main, com testes e publicação automática no Cloudflare Workers Builds.
 Login administrativo com Supabase Auth; arquivos privados no Supabase Storage.
 Inclui correção dos nomes dos clientes em registros existentes.

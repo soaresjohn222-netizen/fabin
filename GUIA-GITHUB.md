@@ -6,16 +6,16 @@ Branch de produção: `main`.
 ## Estado atual
 
 O repositório está conectado ao Cloudflare Workers Builds. Pushes em `main`
-executam os testes, compilam e publicam automaticamente o Worker `oficinafabin`.
+executam os testes, compilam e publicam automaticamente o Worker `sistema`.
 O GitHub Actions também verifica os commits e pull requests.
 
-Endereço de produção: https://oficinafabin.soaresjohn222.workers.dev
+Endereço de produção: https://sistema.fabinhomotors.workers.dev
 
 ## Conexão inicial no painel Cloudflare
 
 1. Workers & Pages → Create application → GitHub.
 2. Autorizar somente o repositório `soaresjohn222-netizen/fabin` e selecionar `main`.
-3. Nome do Worker: `oficinafabin` (igual ao arquivo Wrangler).
+3. Nome do Worker: `sistema` (igual ao arquivo Wrangler).
 4. Diretório raiz: `/`.
 5. Build: `pnpm check && pnpm build:cloudflare`.
 6. Deploy: `pnpm deploy:cloudflare`.

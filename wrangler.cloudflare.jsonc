@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "oficinafabin",
+  "name": "sistema",
   "main": "vinext/server/fetch-handler",
   "compatibility_date": "2026-05-15",
   "compatibility_flags": [
@@ -25,6 +25,6 @@
     "AUTH_VERSION": "1",
     "SUPABASE_URL": "https://ayqtyecrthoyymmyklvy.supabase.co",
     "SUPABASE_STORAGE_BUCKET": "oficinafabin-arquivos",
-    "APP_ORIGIN": "https://oficinafabin.soaresjohn222.workers.dev"
+    "APP_ORIGIN": "https://sistema.fabinhomotors.workers.dev"
   }
 }
