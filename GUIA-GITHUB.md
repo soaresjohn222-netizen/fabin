@@ -5,10 +5,11 @@ Branch de produção: `main`.
 
 ## Estado atual
 
-O código foi sincronizado com a versão atual do sistema, incluindo a correção
-nos nomes dos clientes. O GitHub Actions verifica os commits e pull requests.
-O fluxo de publicação Cloudflare precisa ser conectado uma única vez no painel.
-Não existe ainda nova publicação gratuita pronta para uso nesta conta.
+O repositório está conectado ao Cloudflare Workers Builds. Pushes em `main`
+executam os testes, compilam e publicam automaticamente o Worker `oficinafabin`.
+O GitHub Actions também verifica os commits e pull requests.
+
+Endereço de produção: https://oficinafabin.soaresjohn222.workers.dev
 
 ## Conexão inicial no painel Cloudflare
 
@@ -20,20 +21,18 @@ Não existe ainda nova publicação gratuita pronta para uso nesta conta.
 6. Deploy: `pnpm deploy:cloudflare`.
 7. Configurar os recursos reais e segredos antes de publicar.
 
-A configuração Cloudflare em `wrangler.cloudflare.jsonc` ainda usa um ID D1
-provisório. A publicação recusa esse ID. O deploy só pode ser ativado depois da
-adaptação ao plano gratuito e da configuração real dos recursos.
-A arquitetura atual usa R2 e scrypt: os requisitos gratuitos ainda não foram
-validados. Não ativar R2 ou Workers Paid sem autorização; não reduzir a segurança
-para contornar limites. O plano discutido é usar Cloudflare Free e serviços
-Supabase Free para autenticação e arquivos, mas isso ainda exige implementação.
+A configuração em `wrangler.cloudflare.jsonc` contém o ID real do D1.
+O destino usa Cloudflare Workers Free e D1, Supabase Auth para login e
+Supabase Storage privado para os arquivos. Não depende de R2 ou Workers Paid.
+Os segredos de execução ficam no painel Cloudflare, fora do Git e do frontend.
+Os previews de outras branches estão desabilitados.
 
 ## Rotina de atualização
 
 1. Fazer a alteração e executar `pnpm check` e `pnpm build:cloudflare`.
 2. Commit e push para `main` (ou pull request antes de integrar).
 3. GitHub verifica o commit; a integração Cloudflare compila e publica os pushes
-   em `main` quando estiver conectada.
+   em `main`.
 4. Conferir a publicação e o endereço público. Se um teste do build falhar,
    o comando de publicação não deve executar.
 

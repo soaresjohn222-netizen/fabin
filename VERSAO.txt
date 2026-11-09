@@ -1,4 +1,6 @@
-Fabin — fonte do sistema
+Fabin — Cloudflare Free + D1 + Supabase Free
 Repositório: https://github.com/soaresjohn222-netizen/fabin
-Fonte-base: 1d691563f7b715fe378c86a7340c54ad8e2b2cdb
-Inclui correção de nomes e preparação para Cloudflare. A adaptação gratuita e a migração de produção ainda estão pendentes.
+Produção: https://oficinafabin.soaresjohn222.workers.dev
+Branch de produção: main, com testes e publicação automática no Cloudflare Workers Builds.
+Login administrativo com Supabase Auth; arquivos privados no Supabase Storage.
+Inclui correção dos nomes dos clientes em registros existentes.

@@ -40,5 +40,6 @@ Para atualizações automáticas, conectar `soaresjohn222-netizen/fabin`, branch
 ao Workers Builds. Build: `pnpm check && pnpm build:cloudflare`.
 Deploy: `pnpm deploy:cloudflare`. Não habilitar previews com dados de produção.
 
-Este arquivo descreve a preparação. Banco, bucket, secrets e publicação precisam
-ser realizados na conta autenticada; a compilação local não cria um link público.
+O banco D1, o bucket privado e os segredos estão configurados na conta do
+proprietário. A publicação usa Workers Builds a partir da branch main.
+A compilação local isolada não publica nem migra dados.
