@@ -4,7 +4,7 @@ import {prepareExpenses,commitExpenses,listExpenseImports} from "@/lib/import-ex
 import { ZodError } from "zod";
 import { db,bucket,json,body,readLimited,checkWrite,session,login,logout,config,HttpError } from "@/lib/server";
 import { digest } from "@/lib/password";
-import { dashboard,listOrders,motorcycleSelect,orderSelect,orderWhere,saveCustomer,saveMotorcycle,saveOrder,correctOrderCustomer,deleteOrder } from "@/lib/records";
+import { dashboard,listOrders,motorcycleSelect,orderSelect,orderWhere,saveCustomer,saveMotorcycle,saveOrder,correctOrderCustomer,deleteOrder,deleteDirectory } from "@/lib/records";
 import { normalize,statusLabels } from "@/lib/domain";
 import {startRestore,restoreStatus,stageRestoreRows,stageRestoreFile,commitRestore} from "@/lib/restore";
 export const dynamic="force-dynamic";
@@ -44,10 +44,12 @@ async function handle(request:Request){
     if(!write)return json(await listOrders(url.searchParams));
   }
   if(resource==="customers"){
+    if(request.method==="DELETE"&&id&&!path[2])return json(await deleteDirectory(await body(request,2000),"customers",id));
     if(request.method==="POST"&&!id||request.method==="PUT"&&id)return json(await saveCustomer(await body(request),id),id?200:201);
     if(!write){const q=url.searchParams.get("q")?.slice(0,160)||"";const page=Math.max(1,Number(url.searchParams.get("page"))||1);const where=id?" WHERE c.id=?":" WHERE (c.search_name LIKE ? OR c.phone LIKE ?)";const values=id?[id]:[`%${normalize(q)}%`,`%${q}%`];const [rows,count]=await db().batch<Record<string,any>>([db().prepare("SELECT c.*, (SELECT COUNT(*) FROM orders WHERE customer_id=c.id) visits,(SELECT COUNT(*) FROM motorcycles WHERE customer_id=c.id) motorcycles FROM customers c"+where+" ORDER BY c.search_name LIMIT 50 OFFSET ?").bind(...values,(page-1)*50),db().prepare("SELECT COUNT(*) total FROM customers c"+where).bind(...values)]);return json({rows:rows.results,total:count.results[0].total,page,pageSize:50});}
   }
   if(resource==="motorcycles"){
+    if(request.method==="DELETE"&&id&&!path[2])return json(await deleteDirectory(await body(request,2000),"motorcycles",id));
     if(request.method==="POST"&&!id||request.method==="PUT"&&id)return json(await saveMotorcycle(await body(request),id),id?200:201);
     if(!write){const q=url.searchParams.get("q")?.slice(0,160)||"";const page=Math.max(1,Number(url.searchParams.get("page"))||1);const where=id?" WHERE m.id=?":" WHERE (m.plate LIKE ? OR m.model LIKE ? OR c.search_name LIKE ?)";const values=id?[id]:[`%${q.toUpperCase().replace(/[- ]/g,"")}%`,`%${q}%`,`%${normalize(q)}%`];const [rows,count]=await db().batch<Record<string,any>>([db().prepare(motorcycleSelect+where+" ORDER BY m.plate LIMIT 50 OFFSET ?").bind(...values,(page-1)*50),db().prepare("SELECT COUNT(*) total FROM motorcycles m JOIN customers c ON c.id=m.customer_id"+where).bind(...values)]);return json({rows:rows.results,total:count.results[0].total,page,pageSize:50});}
   }

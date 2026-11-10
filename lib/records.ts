@@ -152,3 +152,25 @@ export async function saveOrder(raw:unknown,id?:number){
  catch(e){if(!before){const retry=await database.prepare("SELECT * FROM orders WHERE request_key=?").bind(x.requestKey).first<Order>();if(retry)return retry;}throw e;}
  return await database.prepare("SELECT * FROM orders WHERE "+(id?"id=?":"request_key=?")).bind(id||x.requestKey).first<Order>();
 }
+
+// Keep directory deletion independent from attendance history. D1 batches make
+// the snapshot audit and guarded deletion one atomic operation.
+export async function deleteDirectory(raw:unknown,kind:"customers"|"motorcycles",id:string){
+ const x=z.object({confirmId:z.string().min(1),updatedAt:z.string().min(1)}).strict().parse(raw);
+ if(x.confirmId!==id)throw new HttpError(400,"Confirme o cadastro que deseja excluir.");
+ const database=db(),isCustomer=kind==="customers";
+ const before=await database.prepare("SELECT * FROM "+kind+" WHERE id=?").bind(id).first<Record<string,any>>();
+ if(!before)throw new HttpError(404,"Cadastro não encontrado. Ele pode já ter sido excluído.");
+ if(before.updated_at!==x.updatedAt)throw new HttpError(409,"Este cadastro mudou em outra janela. Atualize a lista antes de excluir.");
+ const links=isCustomer?"NOT EXISTS(SELECT 1 FROM orders WHERE customer_id=?) AND NOT EXISTS(SELECT 1 FROM motorcycles WHERE customer_id=?)":"NOT EXISTS(SELECT 1 FROM orders WHERE motorcycle_id=?)";
+ const linkedValues=isCustomer?[id,id]:[id];
+ const safe=await database.prepare("SELECT id FROM "+kind+" WHERE id=? AND "+links).bind(id,...linkedValues).first();
+ if(!safe)throw new HttpError(409,isCustomer?"Este cliente possui motos ou ordens vinculadas. Exclua ou transfira as motos e resolva as ordens antes de excluir o cliente.":"Esta moto possui ordens de serviço vinculadas. Resolva essas ordens antes de excluir a moto.");
+ const eventId=crypto.randomUUID(),guard="id=? AND updated_at=? AND "+links;
+ const result=await database.batch([
+ database.prepare("INSERT INTO audit_events (id,entity_type,entity_id,action,before_json,after_json,created_at) SELECT ?,?,?,'delete',?,?,? WHERE EXISTS(SELECT 1 FROM "+kind+" WHERE "+guard+")").bind(eventId,isCustomer?"customer":"motorcycle",id,JSON.stringify(before),JSON.stringify({id,deleted:true}),new Date().toISOString(),id,x.updatedAt,...linkedValues),
+ database.prepare("DELETE FROM "+kind+" WHERE "+guard+" AND EXISTS(SELECT 1 FROM audit_events WHERE id=?)").bind(id,x.updatedAt,...linkedValues,eventId)
+ ]);
+ if(result[1].meta.changes!==1)throw new HttpError(409,"O cadastro ou seus vínculos mudaram. Atualize a lista antes de excluir.");
+ return {id,deleted:true};
+}
