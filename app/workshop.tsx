@@ -69,6 +69,6 @@ export default function Workshop(){
  <footer className="workspace-footer"><span>Oficina Moto</span><span><ShieldCheck size={14}/> Acesso protegido</span></footer></div></SidebarInset></SidebarProvider></div>}
  {expenseEditor&&<ExpenseEditor key={expenseEditor==="new"?"new":expenseEditor.id} initial={expenseEditor==="new"?null:expenseEditor} open={authenticated===true} onClose={()=>setExpenseEditor(null)} onSaved={()=>{setExpenseEditor(null);setRevision(n=>n+1);setSuccess("Gasto salvo com sucesso.")}}/>}
  {authenticated&&shareId!==null&&<OrderShare key={shareId} id={shareId} onClose={()=>setShareId(null)}/>}
- {authenticated&&<OrderDetail order={detail} onShare={o=>setShareId(o.id)} onClose={()=>setDetail(null)} onEdit={o=>{setDetail(null);setForm({initial:o})}} onHistory={history}/>}
+ {authenticated&&<OrderDetail order={detail} onDeleted={()=>setPage(1)} onShare={o=>setShareId(o.id)} onClose={()=>setDetail(null)} onEdit={o=>{setDetail(null);setForm({initial:o})}} onHistory={history}/>}
  <AlertDialog open={!!leaving} onOpenChange={v=>{if(!v)setLeaving(null)}}><AlertDialogContent><AlertDialogTitle>Fechar a ordem em edição?</AlertDialogTitle><AlertDialogDescription>Se houver alterações não salvas, elas serão descartadas.</AlertDialogDescription><AlertDialogFooter><AlertDialogCancel>Continuar preenchendo</AlertDialogCancel><AlertDialogAction onClick={()=>{leaving?.();setLeaving(null)}}>Fechar e continuar</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></>
 }

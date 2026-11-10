@@ -4,7 +4,7 @@ import {prepareExpenses,commitExpenses,listExpenseImports} from "@/lib/import-ex
 import { ZodError } from "zod";
 import { db,bucket,json,body,readLimited,checkWrite,session,login,logout,config,HttpError } from "@/lib/server";
 import { digest } from "@/lib/password";
-import { dashboard,listOrders,motorcycleSelect,orderSelect,orderWhere,saveCustomer,saveMotorcycle,saveOrder,correctOrderCustomer } from "@/lib/records";
+import { dashboard,listOrders,motorcycleSelect,orderSelect,orderWhere,saveCustomer,saveMotorcycle,saveOrder,correctOrderCustomer,deleteOrder } from "@/lib/records";
 import { normalize,statusLabels } from "@/lib/domain";
 import {startRestore,restoreStatus,stageRestoreRows,stageRestoreFile,commitRestore} from "@/lib/restore";
 export const dynamic="force-dynamic";
@@ -34,6 +34,7 @@ async function handle(request:Request){
   }
   if(resource==="expense-imports"&&!write)return json(await listExpenseImports());
   if(resource==="orders"){
+    if(request.method==="DELETE"&&id&&/^\d+$/.test(id)&&!path[2])return json(await deleteOrder(await body(request,2000),Number(id)));
     if(request.method==="PUT"&&id&&/^\d+$/.test(id)&&path[2]==="review-customer"&&!path[3])return json(await correctOrderCustomer(await body(request),Number(id)));
     if(request.method==="PUT"&&id&&/^\d+$/.test(id)&&path[2]==="review-plate")return await reviewPlateFromUpdate(Number(id),request);
     if(request.method==="PUT"&&id&&path[2]==="review-date")return await reviewDate(Number(id),request);
@@ -85,4 +86,4 @@ async function handle(request:Request){
   return json({error:"Não foi possível concluir. Seus campos foram mantidos; tente novamente."},503);
  }
 }
-export const GET=handle;export const POST=handle;export const PUT=handle;
+export const GET=handle;export const POST=handle;export const PUT=handle;export const DELETE=handle;

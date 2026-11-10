@@ -1,4 +1,5 @@
 import { db, HttpError } from "./server";
+import {z} from "zod";
 import {expenseDashboard} from "./expenses";
 import {incomeBreakdown} from "./income";
 import { normalize, normalizePlate, orderSchema, orderCustomerSchema, customerSchema, motorcycleSchema, type Order } from "./domain";
@@ -64,6 +65,21 @@ async function financialOverview(params:URLSearchParams,expenses:Awaited<ReturnT
   return {incomeCents,outgoingCents,balanceCents:incomeCents-outgoingCents,incomeBreakdown:incomeBreakdown(components.results as Parameters<typeof incomeBreakdown>[0]),incomeCount:Number(totals.results[0].count),outgoingCount:Number(expenses.summary.count),unknownIncomeCount:Number(totals.results[0].unknown),unknownOutgoingCount:Number(expenses.summary.unknown),uncertainIncomeCount,uncertainOutgoingCount:expenses.uncertainOutsideRange,monthly};
 }
 export function audit(type:string,id:string,action:string,before:unknown,after:unknown){return db().prepare("INSERT INTO audit_events (id,entity_type,entity_id,action,before_json,after_json,created_at) VALUES (?,?,?,?,?,?,?)").bind(crypto.randomUUID(),type,id,action,before?JSON.stringify(before):null,JSON.stringify(after),new Date().toISOString())}
+export async function deleteOrder(raw:unknown,id:number){
+ const {revision}=z.object({revision:z.number().int().positive(),confirmId:z.number().int().positive()}).strict().refine(x=>x.confirmId===id,{message:"Confirme o número da ordem que deseja excluir."}).parse(raw);
+ const database=db(),before=await database.prepare("SELECT * FROM orders WHERE id=?").bind(id).first<Order>();
+ if(!before)throw new HttpError(404,"Ordem não encontrada. Ela pode já ter sido excluída.");
+ if(before.revision!==revision)throw new HttpError(409,"Esta ordem foi alterada em outra janela. Reabra a ordem antes de excluir.");
+ const eventId=crypto.randomUUID();
+ // Keep the complete snapshot and deletion in one transaction. Never delete linked
+ // customers, motorcycles, other orders or the workbook that supplied this row.
+ const result=await database.batch([
+  database.prepare("INSERT INTO audit_events (id,entity_type,entity_id,action,before_json,after_json,created_at) SELECT ?,'order',?,'delete',?,?,? WHERE EXISTS(SELECT 1 FROM orders WHERE id=? AND revision=?)").bind(eventId,String(id),JSON.stringify(before),JSON.stringify({id,deleted:true}),new Date().toISOString(),id,revision),
+  database.prepare("DELETE FROM orders WHERE id=? AND revision=? AND EXISTS(SELECT 1 FROM audit_events WHERE id=?)").bind(id,revision,eventId),
+ ]);
+ if(result[1].meta.changes!==1)throw new HttpError(409,"Esta ordem foi alterada ou excluída em outra janela. Atualize a lista.");
+ return {id,deleted:true};
+}
 export async function saveCustomer(raw:unknown,id?:string){
  const x=customerSchema.parse(raw);const stamp=new Date().toISOString();const before=id?await db().prepare("SELECT * FROM customers WHERE id=?").bind(id).first():null;
  if(id&&!before)throw new HttpError(404,"Cliente não encontrado.");const key=id||crypto.randomUUID();

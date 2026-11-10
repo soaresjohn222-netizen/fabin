@@ -14,7 +14,7 @@
     "db:generate": "drizzle-kit generate",
     "build:cloudflare": "vinext build --mode cloudflare",
     "deploy:cloudflare": "node scripts/cloudflare-deploy.mjs",
-    "check": "tsc --noEmit && node tests/customer-correction.mjs && node tests/integration.mjs && node tests/plate-income.mjs && node tests/supabase.mjs"
+    "check": "tsc --noEmit && node tests/customer-correction.mjs && node tests/integration.mjs && node tests/plate-income.mjs && node tests/supabase.mjs && node tests/order-deletion.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

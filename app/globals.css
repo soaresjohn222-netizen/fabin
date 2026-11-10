@@ -541,3 +541,5 @@ label > input,label > textarea,label > [data-slot=select-trigger],label > [data-
 .share-preview img { width: 100%; height: auto; border: 1px solid #dae3e8; }
 .share-status { padding: 12px; background: #eef5e1; border-radius: 8px; font-size: .9375rem; }
 @media(max-width:540px){.sheet-actions > button { flex: 1 1 100%; }.share-order-dialog { padding: 22px 18px; }.share-preview { padding: 9px; }.share-download { flex: 1 1 auto; justify-content: center; }}
+
+.delete-order-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; }
